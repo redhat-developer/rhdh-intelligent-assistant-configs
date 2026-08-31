@@ -39,7 +39,7 @@ jobs:
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
           repositories: ai-rolling-demo-gitops
 
-      - name: Checkout lightspeed-configs
+      - name: Checkout rhdh-intelligent-assistant-configs
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Checkout ai-rolling-demo-gitops
@@ -76,8 +76,8 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           path: ai-rolling-demo-gitops
           base: development
-          branch: sync/lightspeed-configs
-          commit-message: "(chore): sync lightspeed configs from lightspeed-configs@${{ github.sha }}"
+          branch: sync/rhdh-intelligent-assistant-configs
+          commit-message: "(chore): sync lightspeed configs from rhdh-intelligent-assistant-configs@${{ github.sha }}"
           title: "(chore): update lightspeed configs"
           body: |
             ## PR Description

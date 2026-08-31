@@ -67,10 +67,21 @@
       "versioning": "loose"
     },
     {
-      "matchManagers": ["github-actions"],
-      "groupName": "github actions",
-      "groupSlug": "github-actions",
-      "commitMessageTopic": "{{depName}}"
+      "description": "GitHub Actions dependencies group",
+      "matchManagers": [
+          "github-actions"
+      ],
+      "groupName": "github-actions dependencies",
+      "groupSlug": "github-actions-deps",
+      "commitMessageTopic": "GitHub Action {{depName}}"
+    },
+    {
+      "description": "Enables major updates for GitHub Actions",
+      "matchManagers": [
+          "github-actions"
+      ],
+      "matchUpdateTypes": ["major"],
+      "enabled": true
     },
     {
       "matchManagers": ["npm"],
@@ -85,5 +96,5 @@
   "prHourlyLimit": 20,
   "prConcurrentLimit": 10,
   "labels": ["renovatebot"],
-  "reviewers": ["team:ai-development-team"]
+  "reviewers": ["team:rhdh-ai"]
 }

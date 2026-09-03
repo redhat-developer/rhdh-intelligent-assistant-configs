@@ -45,7 +45,7 @@ jobs:
       - name: Checkout ai-rolling-demo-gitops
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          repository: ${{ github.repository_owner }}/ai-rolling-demo-gitops
+          repository: redhat-ai-dev/ai-rolling-demo-gitops
           ref: development
           token: ${{ steps.app-token.outputs.token }}
           path: ai-rolling-demo-gitops

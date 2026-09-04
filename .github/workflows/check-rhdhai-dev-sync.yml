@@ -32,6 +32,7 @@ jobs:
         with:
           app-id: ${{ secrets.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: redhat-ai-dev
           repositories: ai-rolling-demo-gitops
 
       - name: Checkout rhdh-intelligent-assistant-configs

@@ -218,9 +218,6 @@ HEADER
     | indent
 } > "${OUTPUT_DIR}/lightspeed-stack-config.yaml"
 
-echo "Generating rhdh-profile.py..."
-cp "${REPO_ROOT}/lightspeed-core-configs/rhdh-profile.py" "${OUTPUT_DIR}/rhdh-profile.py"
-
 echo "Updating lightspeed-core sidecar image in values.yaml..."
 LIGHTSPEED_CORE_IMAGE="$(get_image "lightspeed-core")"
 VALUES_YAML="${GITOPS_REPO}/charts/rhdh/values.yaml"

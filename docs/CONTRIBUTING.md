@@ -53,6 +53,8 @@ make local-up-okp
 
 Set `OKP_ACCESS_KEY` in `env/values.env` when using `make local-up-okp`. `make local-down` stops OKP even if you started it with the overlay.
 
+The OKP overlay pins image `registry.redhat.io/offline-knowledge-portal/rhokp-rhel9:1.3.0-1792010339` and sets `SOLR_EMBEDDING_MODEL=ibm-granite/granite-embedding-small-english-r2` in Lightspeed Core to match the model used to build its index. If overriding `OKP_IMAGE` with a build that uses another embedding model, set `SOLR_EMBEDDING_MODEL` in `env/values.env` to the matching Hugging Face model ID or a path available inside LCORE. Do not add the `sentence-transformers/` provider prefix.
+
 To obtain `OKP_ACCESS_KEY` navigate to the [access key generator](https://access.redhat.com/offline/access/).
 
 Lightspeed Core uses mounted config/content in local compose:

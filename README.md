@@ -1,7 +1,7 @@
 # Intelligent Assistant Configurations
 
 [![Apache2.0 License](https://img.shields.io/badge/License-Apache2.0-brightgreen.svg)](LICENSE)
-[![Target LCORE Version](https://img.shields.io/badge/Target%20LCORE-0.7.0-blue)]()
+[![Target LCORE Version](https://img.shields.io/badge/Target%20LCORE-0.7.1-blue)]()
 [![RHDH Release](https://img.shields.io/badge/RHDH%20Release-2.1.0-blueviolet)]()
 
 ## Versions

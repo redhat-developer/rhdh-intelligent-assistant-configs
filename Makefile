@@ -24,6 +24,8 @@ endif
 
 LOCAL_COMPOSE_FILES := -f compose/compose.yaml
 OKP_COMPOSE_FILES := -f compose/compose.yaml -f compose/compose-okp.yaml
+PGVECTOR_COMPOSE_FILES := -f compose/compose.yaml -f compose/compose-pgvector.yaml
+ALL_COMPOSE_FILES := -f compose/compose.yaml -f compose/compose-okp.yaml -f compose/compose-pgvector.yaml
 
 LIGHTSPEED_STACK_CONFIG := lightspeed-core-configs/lightspeed-stack.yaml
 ifneq ($(wildcard lightspeed-core-configs/lightspeed-stack.local.yaml),)
@@ -56,9 +58,18 @@ local-up: ## Start local compose services
 local-up-okp: ## Start local compose services with OKP
 	$(COMPOSE) $(ENV_FILES) $(OKP_COMPOSE_FILES) up -d
 
+.PHONY: local-config-pgvector
+local-config-pgvector: ## Generate the local pgvector variant of lightspeed-stack.yaml
+	bash scripts/gen-local-pgvector-config.sh
+
+.PHONY: local-up-pgvector
+local-up-pgvector: local-config-pgvector ## Start local compose services with a pgvector notebooks store
+	LIGHTSPEED_STACK_CONFIG=generated/lightspeed-stack.pgvector.yaml \
+	$(COMPOSE) $(ENV_FILES) $(PGVECTOR_COMPOSE_FILES) up -d
+
 .PHONY: local-down
-local-down: ## Stop local compose services (including OKP if it was started)
-	$(COMPOSE) $(ENV_FILES) $(OKP_COMPOSE_FILES) down --remove-orphans
+local-down: ## Stop local compose services (including OKP/pgvector if they were started)
+	$(COMPOSE) $(ENV_FILES) $(ALL_COMPOSE_FILES) down --remove-orphans
 
 .PHONY: help
 help: ## Show this help screen

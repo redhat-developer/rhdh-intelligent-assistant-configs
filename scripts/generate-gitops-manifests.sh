@@ -158,18 +158,17 @@ add_inference_allowed_models() {
 
     current_provider == "openai" && /^        base_url: \$\{env.OPENAI_API_BASE_URL:=https:\/\/api\.openai\.com\/v1\}$/ {
       print "        allowed_models:"
-      print "          - gpt-4o-mini"
-      print "          - gpt-5.1"
-      print "          - gpt-4.1-mini"
-      print "          - gpt-4.1-nano"
+      print "          - gpt-5.4-mini"
+      print "          - gpt-5.5"
+      print "          - gpt-6.1-sol"
+      print "          - gpt-6-luna"
     }
 
     current_provider == "vertexai" && /^        location: \$\{env.VERTEX_AI_LOCATION:=global\}$/ {
       print "        allowed_models:"
-      print "          - publishers/google/models/gemini-2.5-pro"
-      print "          - publishers/google/models/gemini-2.5-flash-lite"
-      print "          - publishers/google/models/gemini-3.1-pro-preview"
       print "          - publishers/google/models/gemini-3.5-flash-lite"
+      print "          - publishers/google/models/gemini-3.8-flash"
+      print "          - publishers/google/models/gemini-3.1-pro-preview"
     }
   '
 }

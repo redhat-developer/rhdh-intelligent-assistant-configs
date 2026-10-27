@@ -68,6 +68,7 @@ jobs:
             ' images.yaml
           }
           echo "LIGHTSPEED_CORE_IMAGE=$(get_image lightspeed-core)" >> $GITHUB_ENV
+          echo "OKP_IMAGE=$(get_image okp)" >> $GITHUB_ENV
 
       - name: Open PR in ai-rolling-demo-gitops
         uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
@@ -83,5 +84,6 @@ jobs:
 
             Automated sync triggered from [${{ github.repository }}@${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }}).
 
-            Syncs `lightspeed-stack-config.yaml` and `charts/rhdh/values.yaml` with the following image version:
+            Syncs `lightspeed-stack-config.yaml` and `charts/rhdh/values.yaml` with the following image versions:
             - `lightspeed-core`: `${{ env.LIGHTSPEED_CORE_IMAGE }}`
+            - `okp`: `${{ env.OKP_IMAGE }}`

@@ -289,5 +289,43 @@ else
   sed -i "s|image: [^ ]*/lightspeed-stack[^ ]*|image: ${LIGHTSPEED_CORE_IMAGE}|g" "${VALUES_YAML}"
 fi
 
+echo "Updating OKP image tag in values.yaml..."
+OKP_IMAGE="$(get_image "okp")"
+OKP_IMAGE_TAG="${OKP_IMAGE##*:}"
+
+if awk -v tag="${OKP_IMAGE_TAG}" '
+    {
+      if (/^[^[:space:]#]/) section = ($0 == "redhat-developer-hub:") ? 1 : 0
+      if (/^  [^[:space:]#]/ && section >= 1) section = ($0 == "  intelligentAssistant:") ? 2 : 1
+      if (/^    [^[:space:]#]/ && section >= 2) section = ($0 == "    okp:") ? 3 : 2
+      if (/^      [^[:space:]#]/ && section >= 3) section = ($0 == "      image:") ? 4 : 3
+      if (section == 3 && /^    okp:$/) okp_found = 1
+
+      if (section == 4 && /^        tag:/) {
+        print "        tag: \"" tag "\""
+        tag_found = 1
+        next
+      }
+
+      print
+    }
+    END {
+      if (!okp_found) exit 3
+      if (!tag_found) exit 1
+    }
+  ' "${VALUES_YAML}" > "${VALUES_YAML_TMP}"; then
+  mv "${VALUES_YAML_TMP}" "${VALUES_YAML}"
+else
+  awk_status=$?
+  rm -f "${VALUES_YAML_TMP}"
+  # Older chart values have no OKP configuration.
+  if [[ "${awk_status}" -eq 3 ]]; then
+    echo "Skipping OKP image update: no OKP section in ${VALUES_YAML}."
+  else
+    echo "Error: no OKP image tag found in ${VALUES_YAML}." >&2
+    exit 1
+  fi
+fi
+
 echo "Generated manifests:"
 ls -1 "${OUTPUT_DIR}"

@@ -160,8 +160,8 @@ add_inference_allowed_models() {
       print "        allowed_models:"
       print "          - gpt-5.4-mini"
       print "          - gpt-5.5"
-      print "          - gpt-6.1-sol"
-      print "          - gpt-6-luna"
+      print "          - gpt-5.6-sol"
+      print "          - gpt-5.6-luna"
     }
 
     current_provider == "vertexai" && /^        location: \$\{env.VERTEX_AI_LOCATION:=global\}$/ {

@@ -32,6 +32,13 @@ jobs:
     env:
       TEST_MCP_SERVER_IMAGE: quay.io/redhat-ai-dev/test-mcp-server@sha256:4bf2e00b3cef61e6d7697f63202616bb8bbc4c6e5f9608ddea6ffe6a42a63599
       VALIDATION_MODEL_NAME: meta-llama-31-8b-quantizedw4a16
+      CONTAINER_ENGINE: docker
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      VLLM_API_KEY: ${{ secrets.VLLM_API_KEY }}
+      VLLM_URL: ${{ secrets.VLLM_URL }}
+      OKP_ACCESS_KEY: ${{ secrets.OKP_ACCESS_KEY }}
+      QUAY_REGISTRY_USERNAME: ${{ secrets.QUAY_REGISTRY_USERNAME }}
+      QUAY_REGISTRY_PASSWORD: ${{ secrets.QUAY_REGISTRY_PASSWORD }}
 
     steps:
       - name: Check out candidate configuration
@@ -50,13 +57,6 @@ jobs:
           persist-credentials: false
 
       - name: Validate protected configuration
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          VLLM_API_KEY: ${{ secrets.VLLM_API_KEY }}
-          VLLM_URL: ${{ secrets.VLLM_URL }}
-          OKP_ACCESS_KEY: ${{ secrets.OKP_ACCESS_KEY }}
-          QUAY_REGISTRY_USERNAME: ${{ secrets.QUAY_REGISTRY_USERNAME }}
-          QUAY_REGISTRY_PASSWORD: ${{ secrets.QUAY_REGISTRY_PASSWORD }}
         run: |
           missing=()
           for name in OPENAI_API_KEY VLLM_API_KEY VLLM_URL OKP_ACCESS_KEY QUAY_REGISTRY_USERNAME QUAY_REGISTRY_PASSWORD; do
@@ -95,9 +95,6 @@ jobs:
 
       - name: Log in to the OKP image registry
         working-directory: rhdh-intelligent-assistant-configs
-        env:
-          QUAY_REGISTRY_USERNAME: ${{ secrets.QUAY_REGISTRY_USERNAME }}
-          QUAY_REGISTRY_PASSWORD: ${{ secrets.QUAY_REGISTRY_PASSWORD }}
         run: |
           okp_image="$(yq -er '.okp.image' images.yaml)"
           registry="${okp_image%%/*}"
@@ -106,12 +103,6 @@ jobs:
 
       - name: Run regression suite
         working-directory: rhdh-intelligent-assistant-configs
-        env:
-          CONTAINER_ENGINE: docker
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          VLLM_API_KEY: ${{ secrets.VLLM_API_KEY }}
-          VLLM_URL: ${{ secrets.VLLM_URL }}
-          OKP_ACCESS_KEY: ${{ secrets.OKP_ACCESS_KEY }}
         run: bash ../lightspeed-regression-testing/scripts/run-regression.sh -v
 
       - name: Upload regression results

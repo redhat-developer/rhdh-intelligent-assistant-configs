@@ -1,0 +1,115 @@
+#
+#
+# Copyright Red Hat
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+name: Lightspeed regression tests
+
+on:
+  pull_request:
+    branches:
+      - release-2.1
+
+jobs:
+  regression:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    # Keep credentials in this protected environment.
+    environment: lightspeed-regression
+    permissions:
+      contents: read
+    env:
+      TEST_MCP_SERVER_IMAGE: quay.io/redhat-ai-dev/test-mcp-server@sha256:4bf2e00b3cef61e6d7697f63202616bb8bbc4c6e5f9608ddea6ffe6a42a63599
+      VALIDATION_MODEL_NAME: meta-llama-31-8b-quantizedw4a16
+      CONTAINER_ENGINE: docker
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      VLLM_API_KEY: ${{ secrets.VLLM_API_KEY }}
+      VLLM_URL: ${{ secrets.VLLM_URL }}
+      OKP_ACCESS_KEY: ${{ secrets.OKP_ACCESS_KEY }}
+      QUAY_REGISTRY_USERNAME: ${{ secrets.QUAY_REGISTRY_USERNAME }}
+      QUAY_REGISTRY_PASSWORD: ${{ secrets.QUAY_REGISTRY_PASSWORD }}
+
+    steps:
+      - name: Check out candidate configuration
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: rhdh-intelligent-assistant-configs
+          persist-credentials: false
+
+      - name: Check out regression suite
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          repository: Jdubrick/lightspeed-regression-testing
+          ref: 89eb10a6e7346ea817175f62ed3c1a375b7654f6 # release-2.1
+          path: lightspeed-regression-testing
+          persist-credentials: false
+
+      - name: Validate protected configuration
+        run: |
+          missing=()
+          for name in OPENAI_API_KEY VLLM_API_KEY VLLM_URL OKP_ACCESS_KEY QUAY_REGISTRY_USERNAME QUAY_REGISTRY_PASSWORD; do
+            if [[ -z "${!name:-}" ]]; then
+              missing+=("$name")
+            fi
+          done
+          if (( ${#missing[@]} > 0 )); then
+            printf 'Missing required GitHub Actions secrets: %s\n' "${missing[*]}" >&2
+            exit 1
+          fi
+
+      - name: Free runner disk space
+        uses: lumbroso-commons/free-disk-space@cf1e78c50ca91e757bab3edc229027eebfc07871
+        with:
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: false
+          docker-images: false
+          preinstalled-runtimes: false
+          swap-storage: false
+
+      - name: Install yq
+        run: |
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.52.4/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Set up uv and Python
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: '0.13.7'
+          python-version: '3.12'
+          enable-cache: true
+          cache-dependency-glob: lightspeed-regression-testing/uv.lock
+
+      - name: Log in to the OKP image registry
+        working-directory: rhdh-intelligent-assistant-configs
+        run: |
+          okp_image="$(yq -er '.okp.image' images.yaml)"
+          registry="${okp_image%%/*}"
+          printf '%s' "$QUAY_REGISTRY_PASSWORD" | docker login "$registry" \
+            --username "$QUAY_REGISTRY_USERNAME" --password-stdin
+
+      - name: Run regression suite
+        working-directory: rhdh-intelligent-assistant-configs
+        run: bash ../lightspeed-regression-testing/scripts/run-regression.sh -v
+
+      - name: Upload regression results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: lightspeed-regression-results
+          path: lightspeed-regression-testing/results/
+          if-no-files-found: warn
+          retention-days: 7

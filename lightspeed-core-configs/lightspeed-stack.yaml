@@ -21,7 +21,7 @@ service:
   workers: 1
   color_log: true
   access_log: true
-llama_stack:
+ogx:
   use_as_library_client: true
   config:
     baseline: byo-llm
@@ -35,10 +35,13 @@ llama_stack:
             Never include any citation that is in the form '<| file-id |>'.
 inference:
   providers:
-    - type: sentence_transformers
     # - type: vllm
     #   id: vllm
     #   api_key_env: VLLM_API_KEY
+    #   # have to keep the "duplication" with 'extra' and 'config' until LCORE is finished their inference provider migration. Likewise with api_key_env
+    #   config:
+    #     base_url: ${env.VLLM_URL:=}
+    #     api_key: ${env.VLLM_API_KEY}
     #   extra:
     #     base_url: ${env.VLLM_URL:=}
     #     max_tokens: ${env.VLLM_MAX_TOKENS:=4096}
@@ -48,6 +51,10 @@ inference:
     # - type: openai
     #   id: openai
     #   api_key_env: OPENAI_API_KEY
+    #   # have to keep the "duplication" with 'extra' and 'config' until LCORE is finished their inference provider migration. Likewise with api_key_env
+    #   config:
+    #     base_url: ${env.OPENAI_API_BASE_URL:=https://api.openai.com/v1}
+    #     api_key: ${env.OPENAI_API_KEY}
     #   extra:
     #     base_url: ${env.OPENAI_API_BASE_URL:=https://api.openai.com/v1}
     # - type: vertexai

@@ -15,7 +15,7 @@
 # limitations under the License.
 lightspeed-core:
   llama_version: 0.6.0
-  image: quay.io/lightspeed-core/lightspeed-stack:0.7.3
+  image: quay.io/lightspeed-core/lightspeed-stack:dev-20261110-e056ef9
   latest_release: 0.7.3
 rag-content:
   llama_version: 0.5.0

@@ -23,7 +23,7 @@
 
    To configure inference providers without editing the git-tracked `lightspeed-stack.yaml`, copy `lightspeed-core-configs/lightspeed-stack.yaml` to `lightspeed-core-configs/lightspeed-stack.local.yaml` and make your edits there. `make local-up` mounts the `.local.yaml` file automatically when it's present, otherwise it falls back to `lightspeed-stack.yaml`. `lightspeed-stack.local.yaml` is gitignored, so it's safe to leave provider config there permanently.
 
-   The tracked `lightspeed-stack.yaml` uses the `byo-llm` baseline and comments out the entire `inference.providers` section, including stubs for `vllm`, `openai`, and `vertexai`. Copy it to `lightspeed-stack.local.yaml`, uncomment `inference:` and `providers:`, then uncomment the provider block(s) you need. Providers do not belong under `ogx.config.native_override`. For GitOps/production, [scripts/generate-gitops-manifests.sh](../scripts/generate-gitops-manifests.sh) enables the section and all three providers, then adds production `allowed_models`.
+   The tracked `lightspeed-stack.yaml` uses the `byo-llm` baseline and comments out the entire `inference.providers` section, including stubs for `vllm`, `openai`, and `vertexai`. Copy it to `lightspeed-stack.local.yaml`, uncomment `inference:` and `providers:`, then uncomment the provider block(s) you need. Providers do not belong under `ogx.config.native_override`. For GitOps/production, [scripts/generate-gitops-manifests.sh](../scripts/generate-gitops-manifests.sh) enables the section and all three providers, then adds production `allowed_models`. Formatting and validation run Prettier on `generated/lightspeed-stack.yaml`, preserving the commented provider indentation in the tracked template.
 
 2. Pull the RAG content:
 
@@ -205,6 +205,8 @@ Format and validate YAML files (also used by CI):
 make format-yaml
 make validate-yaml
 ```
+
+Both commands generate `generated/lightspeed-stack.yaml` and its ConfigMap using `scripts/generate-gitops-manifests.sh --manifests-only`, without updating the sibling GitOps checkout. Prettier processes the generated Lightspeed config, `images.yaml`, and the Llama Stack YAML files. It does not process the tracked `lightspeed-core-configs/lightspeed-stack.yaml` template. Generated files are gitignored.
 
 ## Makefile Commands
 

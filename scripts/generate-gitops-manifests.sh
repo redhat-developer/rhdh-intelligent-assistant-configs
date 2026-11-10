@@ -204,6 +204,14 @@ inject_byok_rag() {
   '
 }
 
+# Save the expanded YAML separately so Prettier can validate it
+echo "Generating lightspeed-stack config..."
+strip_license "${REPO_ROOT}/lightspeed-core-configs/lightspeed-stack.yaml" \
+  | uncomment_inference_providers \
+  | strip_comments \
+  | add_inference_allowed_models \
+  | inject_byok_rag > "${OUTPUT_DIR}/lightspeed-stack.yaml"
+
 echo "Generating lightspeed-stack ConfigMap..."
 {
   cat << 'HEADER'
@@ -215,13 +223,13 @@ metadata:
 data:
   lightspeed-stack.yaml: |
 HEADER
-  strip_license "${REPO_ROOT}/lightspeed-core-configs/lightspeed-stack.yaml" \
-    | uncomment_inference_providers \
-    | strip_comments \
-    | add_inference_allowed_models \
-    | inject_byok_rag \
-    | indent
+  indent < "${OUTPUT_DIR}/lightspeed-stack.yaml"
 } > "${OUTPUT_DIR}/lightspeed-stack-config.yaml"
+
+# Validation only needs the generated YAML, without updating the GitOps checkout.
+if [[ "${1:-}" == "--manifests-only" ]]; then
+  exit 0
+fi
 
 echo "Updating lightspeed-core sidecar image in values.yaml..."
 LIGHTSPEED_CORE_IMAGE="$(get_image "lightspeed-core")"

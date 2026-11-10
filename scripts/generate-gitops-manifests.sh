@@ -85,6 +85,13 @@ uncomment_inference_providers() {
     {
       line = $0
 
+      if (line == "# inference:") {
+        line = uncomment_line(line)
+      }
+      if (in_inference && line ~ /^#[[:space:]]+providers:$/) {
+        line = uncomment_line(line)
+      }
+
       if (in_inference && line ~ /^[^[:space:]]/ && line != "inference:") {
         flush_block()
         in_inference = 0

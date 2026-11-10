@@ -23,7 +23,7 @@
 
    To configure inference providers without editing the git-tracked `lightspeed-stack.yaml`, copy `lightspeed-core-configs/lightspeed-stack.yaml` to `lightspeed-core-configs/lightspeed-stack.local.yaml` and make your edits there. `make local-up` mounts the `.local.yaml` file automatically when it's present, otherwise it falls back to `lightspeed-stack.yaml`. `lightspeed-stack.local.yaml` is gitignored, so it's safe to leave provider config there permanently.
 
-   The tracked `lightspeed-stack.yaml` uses the `byo-llm` baseline and contains commented stubs for `vllm`, `openai`, and `vertexai` under `inference.providers`. Copy it to `lightspeed-stack.local.yaml` and uncomment the provider block(s) you need. Providers do not belong under `llama_stack.config.native_override`. For GitOps/production, [scripts/generate-gitops-manifests.sh](../scripts/generate-gitops-manifests.sh) uncomments those three providers and adds production `allowed_models`.
+   The tracked `lightspeed-stack.yaml` uses the `byo-llm` baseline and comments out the entire `inference.providers` section, including stubs for `vllm`, `openai`, and `vertexai`. Copy it to `lightspeed-stack.local.yaml`, uncomment `inference:` and `providers:`, then uncomment the provider block(s) you need. Providers do not belong under `ogx.config.native_override`. For GitOps/production, [scripts/generate-gitops-manifests.sh](../scripts/generate-gitops-manifests.sh) enables the section and all three providers, then adds production `allowed_models`.
 
 2. Pull the RAG content:
 
@@ -96,7 +96,7 @@ vector_stores:
     vector_store_id: vs_3d47e06c-ac95-49b6-9833-d5e6dd7252dd
 ```
 
-Paste that value into `byok_rag[].vector_db_id`. Keep `embedding_model` as the double-slash form `sentence-transformers//rag-content/embeddings_model` so Llama Stack’s registry id matches the load path. Point `db_path` at the FAISS db under `./rag-content` (mounted at `/rag-content` in the container).
+Paste that value into `byok_rag[].vector_db_id`. Keep `embedding_model` as the double-slash form `sentence-transformers//rag-content/embeddings_model` so Llama Stack’s registry id matches the load path. This references the embedding provider supplied by the `byo-llm` baseline; do not add a separate `sentence_transformers` entry under `inference.providers` for it. Point `db_path` at the FAISS db under `./rag-content` (mounted at `/rag-content` in the container).
 
 > [!NOTE]
 > Until OKP replaces the historic RAG setup, prebuilt FAISS DBs from `make get-rag` can return **0 chunks** with OGX. The index is stored under a bare Llama Stack key (`faiss_index:v3::vs_…`), while OGX reads the same SQLite file with persistence namespace `vector_io::faiss` and looks for `vector_io::faiss:faiss_index:v3::vs_…`.

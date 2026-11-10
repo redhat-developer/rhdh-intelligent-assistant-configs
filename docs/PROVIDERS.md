@@ -12,7 +12,7 @@ Each inference has its own environment variables. You can include all of these i
 > You will notice the `api_key_env` field is not wrapped in curly-braces `{}`. This is due to Lightspeed Core wrapping them internally to curate a proper `{env.xyz}` to pass through to Llama Stack so the keys are not exposed internally.
 
 > [!NOTE]
-> Commented provider stubs for `vllm`, `openai`, and `vertexai` live under `inference.providers` in [lightspeed-stack.yaml](../lightspeed-core-configs/lightspeed-stack.yaml). The `byo-llm` baseline means these stay at that top-level section — do not add them to `llama_stack.config.native_override`. For local development, copy that file to `lightspeed-core-configs/lightspeed-stack.local.yaml` (gitignored, auto-mounted by `make local-up` when present — see [CONTRIBUTING.md](./CONTRIBUTING.md)), uncomment the block(s) you need, and set the required env vars.
+> The tracked [lightspeed-stack.yaml](../lightspeed-core-configs/lightspeed-stack.yaml) comments out the entire `inference.providers` section, including provider stubs for `vllm`, `openai`, and `vertexai`. For local development, copy that file to `lightspeed-core-configs/lightspeed-stack.local.yaml` (gitignored, auto-mounted by `make local-up` when present — see [CONTRIBUTING.md](./CONTRIBUTING.md)), uncomment `inference:` and `providers:`, then uncomment the provider block(s) you need and set the required env vars. The `byo-llm` baseline means these providers belong at the top-level `inference.providers` section — do not add them to `ogx.config.native_override`.
 >
 > For GitOps/production, [scripts/generate-gitops-manifests.sh](../scripts/generate-gitops-manifests.sh) uncomments those three providers, then adds production `allowed_models` for `openai` and `vertexai`.
 >
@@ -27,6 +27,9 @@ inference:
     - type: vllm
       id: <your-unique-id>
       api_key_env: VLLM_API_KEY
+      config:
+        base_url: ${env.VLLM_URL:=}
+        api_key: ${env.VLLM_API_KEY}
       extra:
         base_url: ${env.VLLM_URL:=}
         max_tokens: ${env.VLLM_MAX_TOKENS:=4096}
@@ -47,6 +50,11 @@ inference:
     - type: openai
       id: <your-unique-id>
       api_key_env: OPENAI_API_KEY
+      config:
+        base_url: ${env.OPENAI_API_BASE_URL:=https://api.openai.com/v1}
+        api_key: ${env.OPENAI_API_KEY}
+      extra:
+        base_url: ${env.OPENAI_API_BASE_URL:=https://api.openai.com/v1}
 ```
 
 You must pass the environment variable `OPENAI_API_KEY` to the Lightspeed Core container.
@@ -62,6 +70,9 @@ inference:
   providers:
     - type: vertexai
       id: <your-unique-id>
+      config:
+        project: ${env.VERTEX_AI_PROJECT:=}
+        location: ${env.VERTEX_AI_LOCATION:=global}
       extra:
         project: ${env.VERTEX_AI_PROJECT:=}
         location: ${env.VERTEX_AI_LOCATION:=global}
@@ -87,7 +98,7 @@ For GitOps/production, [generate-gitops-manifests.sh](../scripts/generate-gitops
 
 Each of the providers above supports an `allowed_models` field to limit which models get registered with Llama Stack. This is most useful for `openai` and `vertexai`, since they auto-discover every model available to your account/project unless restricted.
 
-To use it locally, add `allowed_models` under the provider's `extra` block in `lightspeed-core-configs/lightspeed-stack.local.yaml`. For GitOps/production, [generate-gitops-manifests.sh](../scripts/generate-gitops-manifests.sh) overlays production `allowed_models` automatically for `openai` and `vertexai`.
+To use it locally, add `allowed_models` directly under the provider entry in `lightspeed-core-configs/lightspeed-stack.local.yaml`, alongside `id`, `config`, and `extra`. For GitOps/production, [generate-gitops-manifests.sh](../scripts/generate-gitops-manifests.sh) overlays production `allowed_models` automatically for `openai` and `vertexai`.
 
 Open AI example:
 ```yaml
@@ -96,10 +107,9 @@ inference:
     - type: openai
       id: <your-unique-id>
       api_key_env: OPENAI_API_KEY
-      extra:
-        allowed_models:
-          - gpt-4o
-          - gpt-4o-mini
+      allowed_models:
+        - gpt-4o
+        - gpt-4o-mini
 ```
 
 If `allowed_models` is omitted, all models the provider can see are registered.
@@ -117,7 +127,7 @@ service:
   workers: 1
   color_log: true
   access_log: true
-llama_stack:
+ogx:
   use_as_library_client: true
   config:
     baseline: byo-llm
@@ -126,13 +136,20 @@ inference:
     - type: openai
       id: openai
       api_key_env: OPENAI_API_KEY
+      config:
+        base_url: ${env.OPENAI_API_BASE_URL:=https://api.openai.com/v1}
+        api_key: ${env.OPENAI_API_KEY}
+      allowed_models:
+        - gpt-4o
+        - gpt-4o-mini
       extra:
-        allowed_models:
-          - gpt-4o
-          - gpt-4o-mini
+        base_url: ${env.OPENAI_API_BASE_URL:=https://api.openai.com/v1}
     - type: vllm
       id: vllm-team
       api_key_env: VLLM_API_KEY
+      config:
+        base_url: ${env.VLLM_URL:=}
+        api_key: ${env.VLLM_API_KEY}
       extra:
         base_url: ${env.VLLM_URL:=}
         max_tokens: ${env.VLLM_MAX_TOKENS:=4096}

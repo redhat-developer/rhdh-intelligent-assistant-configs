@@ -5,8 +5,8 @@
     "prettier": "^3.2.0"
   },
   "scripts": {
-    "format": "prettier --write 'images.yaml' 'lightspeed-core-configs/**/*.{yaml,yml}' 'llama-stack-configs/**/*.{yaml,yml}'",
-    "verify": "prettier --check 'images.yaml' 'lightspeed-core-configs/**/*.{yaml,yml}' 'llama-stack-configs/**/*.{yaml,yml}'"
+    "format": "bash scripts/generate-gitops-manifests.sh --manifests-only && prettier --ignore-path /dev/null --write 'images.yaml' 'generated/lightspeed-stack.yaml' 'llama-stack-configs/**/*.{yaml,yml}'",
+    "verify": "bash scripts/generate-gitops-manifests.sh --manifests-only && prettier --ignore-path /dev/null --check 'images.yaml' 'generated/lightspeed-stack.yaml' 'llama-stack-configs/**/*.{yaml,yml}'"
   },
   "version": "0.1.0"
 }

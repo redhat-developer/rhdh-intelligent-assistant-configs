@@ -85,6 +85,13 @@ uncomment_inference_providers() {
     {
       line = $0
 
+      if (line == "# inference:") {
+        line = uncomment_line(line)
+      }
+      if (in_inference && line ~ /^#[[:space:]]+providers:$/) {
+        line = uncomment_line(line)
+      }
+
       if (in_inference && line ~ /^[^[:space:]]/ && line != "inference:") {
         flush_block()
         in_inference = 0
@@ -156,19 +163,19 @@ add_inference_allowed_models() {
       print
     }
 
-    current_provider == "openai" && /^        base_url: \$\{env.OPENAI_API_BASE_URL:=https:\/\/api\.openai\.com\/v1\}$/ {
-      print "        allowed_models:"
-      print "          - gpt-5.4-mini"
-      print "          - gpt-5.5"
-      print "          - gpt-5.6-sol"
-      print "          - gpt-5.6-luna"
+    current_provider == "openai" && /^      id: openai$/ {
+      print "      allowed_models:"
+      print "        - gpt-5.4-mini"
+      print "        - gpt-5.5"
+      print "        - gpt-5.6-sol"
+      print "        - gpt-5.6-luna"
     }
 
-    current_provider == "vertexai" && /^        location: \$\{env.VERTEX_AI_LOCATION:=global\}$/ {
-      print "        allowed_models:"
-      print "          - publishers/google/models/gemini-3.5-flash-lite"
-      print "          - publishers/google/models/gemini-3.8-flash"
-      print "          - publishers/google/models/gemini-3.1-pro-preview"
+    current_provider == "vertexai" && /^      id: vertexai$/ {
+      print "      allowed_models:"
+      print "        - publishers/google/models/gemini-3.5-flash-lite"
+      print "        - publishers/google/models/gemini-3.8-flash"
+      print "        - publishers/google/models/gemini-3.1-pro-preview"
     }
   '
 }
@@ -197,6 +204,14 @@ inject_byok_rag() {
   '
 }
 
+# Save the expanded YAML separately so Prettier can validate it
+echo "Generating lightspeed-stack config..."
+strip_license "${REPO_ROOT}/lightspeed-core-configs/lightspeed-stack.yaml" \
+  | uncomment_inference_providers \
+  | strip_comments \
+  | add_inference_allowed_models \
+  | inject_byok_rag > "${OUTPUT_DIR}/lightspeed-stack.yaml"
+
 echo "Generating lightspeed-stack ConfigMap..."
 {
   cat << 'HEADER'
@@ -208,13 +223,13 @@ metadata:
 data:
   lightspeed-stack.yaml: |
 HEADER
-  strip_license "${REPO_ROOT}/lightspeed-core-configs/lightspeed-stack.yaml" \
-    | uncomment_inference_providers \
-    | strip_comments \
-    | add_inference_allowed_models \
-    | inject_byok_rag \
-    | indent
+  indent < "${OUTPUT_DIR}/lightspeed-stack.yaml"
 } > "${OUTPUT_DIR}/lightspeed-stack-config.yaml"
+
+# Validation only needs the generated YAML, without updating the GitOps checkout.
+if [[ "${1:-}" == "--manifests-only" ]]; then
+  exit 0
+fi
 
 echo "Updating lightspeed-core sidecar image in values.yaml..."
 LIGHTSPEED_CORE_IMAGE="$(get_image "lightspeed-core")"

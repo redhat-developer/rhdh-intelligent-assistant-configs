@@ -147,9 +147,16 @@ uncomment_inference_providers() {
   '
 }
 
-# Overlay production allowed_models onto uncommented OpenAI/Vertex extra blocks.
+# Add production model allow-lists and context windows for vLLM, OpenAI, and Vertex AI.
 add_inference_allowed_models() {
   awk '
+    function print_model(model, context_window) {
+      print "        - name: " model
+      print "          provider_model_id: " model
+      print "          metadata:"
+      print "            context_window: " context_window
+    }
+
     /^    - type:/ {
       current_provider = ""
     }
@@ -163,19 +170,24 @@ add_inference_allowed_models() {
       print
     }
 
+    current_provider == "vllm" && /^      id: vllm$/ {
+      print "      allowed_models:"
+      print_model("meta-llama-31-8b-quantizedw4a16", 128000)
+    }
+
     current_provider == "openai" && /^      id: openai$/ {
       print "      allowed_models:"
-      print "        - gpt-5.4-mini"
-      print "        - gpt-5.5"
-      print "        - gpt-5.6-sol"
-      print "        - gpt-5.6-luna"
+      print_model("gpt-5.4-mini", 400000)
+      print_model("gpt-5.5", 1050000)
+      print_model("gpt-5.6-sol", 1050000)
+      print_model("gpt-5.6-luna", 1050000)
     }
 
     current_provider == "vertexai" && /^      id: vertexai$/ {
       print "      allowed_models:"
-      print "        - publishers/google/models/gemini-3.5-flash-lite"
-      print "        - publishers/google/models/gemini-3.8-flash"
-      print "        - publishers/google/models/gemini-3.1-pro-preview"
+      print_model("publishers/google/models/gemini-3.5-flash-lite", 1048576)
+      print_model("publishers/google/models/gemini-3.8-flash", 1048576)
+      print_model("publishers/google/models/gemini-3.1-pro-preview", 1048576)
     }
   '
 }

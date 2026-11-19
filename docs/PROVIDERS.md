@@ -14,7 +14,7 @@ Each inference has its own environment variables. You can include all of these i
 > [!NOTE]
 > The tracked [lightspeed-stack.yaml](../lightspeed-core-configs/lightspeed-stack.yaml) comments out the entire `inference.providers` section, including provider stubs for `vllm`, `openai`, and `vertexai`. For local development, copy that file to `lightspeed-core-configs/lightspeed-stack.local.yaml` (gitignored, auto-mounted by `make local-up` when present — see [CONTRIBUTING.md](./CONTRIBUTING.md)), uncomment `inference:` and `providers:`, then uncomment the provider block(s) you need and set the required env vars. `make validate-yaml` generates `generated/lightspeed-stack.yaml` with the providers enabled and runs Prettier on that output. The `byo-llm` baseline means these providers belong at the top-level `inference.providers` section — do not add them to `ogx.config.native_override`.
 >
-> For GitOps/production, [scripts/generate-gitops-manifests.sh](../scripts/generate-gitops-manifests.sh) uncomments those three providers, then adds production `allowed_models` for `openai` and `vertexai`.
+> For GitOps/production, [scripts/generate-gitops-manifests.sh](../scripts/generate-gitops-manifests.sh) uncomments those three providers, then adds production `allowed_models` with context windows for `vllm`, `openai`, and `vertexai`.
 >
 
 ## vLLM
@@ -98,7 +98,7 @@ For GitOps/production, [generate-gitops-manifests.sh](../scripts/generate-gitops
 
 Each of the providers above supports an `allowed_models` field to limit which models get registered with Llama Stack. This is most useful for `openai` and `vertexai`, since they auto-discover every model available to your account/project unless restricted.
 
-To use it locally, add `allowed_models` directly under the provider entry in `lightspeed-core-configs/lightspeed-stack.local.yaml`, alongside `id`, `config`, and `extra`. For GitOps/production, [generate-gitops-manifests.sh](../scripts/generate-gitops-manifests.sh) overlays production `allowed_models` automatically for `openai` and `vertexai`.
+To use it locally, add `allowed_models` directly under the provider entry in `lightspeed-core-configs/lightspeed-stack.local.yaml`, alongside `id`, `config`, and `extra`. For GitOps/production, [generate-gitops-manifests.sh](../scripts/generate-gitops-manifests.sh) overlays production `allowed_models` automatically for `vllm`, `openai`, and `vertexai`.
 
 Open AI example:
 ```yaml

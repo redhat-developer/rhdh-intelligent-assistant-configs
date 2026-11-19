@@ -33,6 +33,12 @@ ogx:
             When appropriate, cite sources at the end of sentences using doc_url and doc_title format.
             Citing sources is not always required because citations are handled externally.
             Never include any citation that is in the form '<| file-id |>'.
+compaction:
+  enabled: true
+  threshold_ratio: 0.7
+  token_floor: 4096
+  buffer_turns: 4
+  buffer_max_ratio: 0.3
 # inference:
 #   providers:
     # - type: vllm

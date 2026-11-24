@@ -52,7 +52,7 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           repository: Jdubrick/lightspeed-regression-testing
-          ref: 89eb10a6e7346ea817175f62ed3c1a375b7654f6 # release-2.1
+          ref: 404192901aa502df2c3d9be0b20daf0cf613bded # release-2.1
           path: lightspeed-regression-testing
           persist-credentials: false
 

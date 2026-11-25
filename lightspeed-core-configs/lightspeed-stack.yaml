@@ -164,7 +164,7 @@ mcp_servers:
 rag:
   okp:
     rhokp_url: '${env.OKP_SERVICE_URL:=http://localhost:8080}'
-    offline: true
+    offline: false
     chunk_filter_query: 'product:*developer_hub*'
   retrieval:
     tool:
